@@ -322,12 +322,12 @@ public class ToDoService {
     public ResponseEntity<?> getProgressToDoPaging(int page, UserDetailsImpl userDetails) {
         List<ToDoProgressResponse> toDoProgressResponseList = getProgressToDo(userDetails);
         int nowPage = 0;
-        int pageContent = 7;
+        int pageSize = 7;
         int totalPage = 0;
-        if (toDoProgressResponseList.size() % pageContent != 0) {
-            totalPage = toDoProgressResponseList.size() / pageContent + 1;
+        if (toDoProgressResponseList.size() % pageSize != 0) {
+            totalPage = toDoProgressResponseList.size() / pageSize + 1;
         } else {
-            totalPage = toDoProgressResponseList.size() / pageContent;
+            totalPage = toDoProgressResponseList.size() / pageSize;
         }
 
         if (page == 0) {
@@ -336,27 +336,27 @@ public class ToDoService {
             page = totalPage;
         }
 
-        List<ToDoProgressResponse> pageList = new ArrayList<>();
+        List<ToDoProgressResponse> content = new ArrayList<>();
         for (int i = 0; i < totalPage; i++) {
             if (i == page - 1) {
                 nowPage = i;
-                int temp = (i+1) * pageContent;
+                int temp = (i+1) * pageSize;
                 if (temp > toDoProgressResponseList.size()) {
                     temp = toDoProgressResponseList.size();
                 }
 
-                for (int k = i * pageContent; k < temp; k++) {
-                    pageList.add(toDoProgressResponseList.get(k));
+                for (int k = i * pageSize; k < temp; k++) {
+                    content.add(toDoProgressResponseList.get(k));
                 }
             }
         }
 
         ToDoProgressPagingResponse toDoProgressPagingResponse = ToDoProgressPagingResponse.builder()
                 .nowPage(nowPage + 1)
-                .pageSize(pageContent)
+                .pageSize(pageSize)
                 .totalPage(totalPage)
                 .totalContent(toDoProgressResponseList.size())
-                .content(pageList)
+                .content(content)
                 .build();
 
         return new ResponseEntity<>(toDoProgressPagingResponse, HttpStatus.OK);
