@@ -68,7 +68,8 @@ public class ToDoController {
 
     //할일 날짜별 전체 조회
     @GetMapping("api/todo/progress")
-    public ResponseEntity<?> getProgressToDo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return toDoService.getProgressToDo(userDetails);
+    public ResponseEntity<?> getProgressToDo(@RequestParam(value = "page", defaultValue = "1") int page,
+                                             @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return toDoService.getProgressToDoPaging(page, userDetails);
     }
 }
