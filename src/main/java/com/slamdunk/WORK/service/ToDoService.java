@@ -4,6 +4,7 @@ import com.slamdunk.WORK.Editor.ToDoEditor;
 import com.slamdunk.WORK.dto.request.ToDoEditRequest;
 import com.slamdunk.WORK.dto.request.ToDoRequest;
 import com.slamdunk.WORK.dto.response.ToDoDetailResponse;
+import com.slamdunk.WORK.dto.response.ToDoProgressPagingResponse;
 import com.slamdunk.WORK.dto.response.ToDoProgressResponse;
 import com.slamdunk.WORK.dto.response.ToDoResponse;
 import com.slamdunk.WORK.entity.*;
@@ -225,7 +226,7 @@ public class ToDoService {
     }
 
     //할일 날짜별 전체 조회
-    public ResponseEntity<?> getProgressToDo(UserDetailsImpl userDetails) {
+    public List<ToDoProgressResponse> getProgressToDo(UserDetailsImpl userDetails) {
         List<User> teamMemberList = userRepository.findAllByTeam(userDetails.getUser().getTeam());
 
         List<ToDoProgressResponse> toDoProgressResponseList = new ArrayList<>();
@@ -324,7 +325,51 @@ public class ToDoService {
             moveDay = moveDay.plusDays(1);
         }
 
-        return new ResponseEntity<>(toDoProgressResponseList, HttpStatus.OK);
+        return toDoProgressResponseList;
+    }
+
+    //할일 날짜별 전체 조회 페이지네이션
+    public ResponseEntity<?> getProgressToDoPaging(int page, UserDetailsImpl userDetails) {
+        List<ToDoProgressResponse> toDoProgressResponseList = getProgressToDo(userDetails);
+        int nowPage = 0;
+        int pageSize = 7;
+        int totalPage = 0;
+        if (toDoProgressResponseList.size() % pageSize != 0) {
+            totalPage = toDoProgressResponseList.size() / pageSize + 1;
+        } else {
+            totalPage = toDoProgressResponseList.size() / pageSize;
+        }
+
+        if (page == 0) {
+            page = 1;
+        } else if (page > totalPage) {
+            page = totalPage;
+        }
+
+        List<ToDoProgressResponse> content = new ArrayList<>();
+        for (int i = 0; i < totalPage; i++) {
+            if (i == page - 1) {
+                nowPage = i;
+                int temp = (i+1) * pageSize;
+                if (temp > toDoProgressResponseList.size()) {
+                    temp = toDoProgressResponseList.size();
+                }
+
+                for (int k = i * pageSize; k < temp; k++) {
+                    content.add(toDoProgressResponseList.get(k));
+                }
+            }
+        }
+
+        ToDoProgressPagingResponse toDoProgressPagingResponse = ToDoProgressPagingResponse.builder()
+                .nowPage(nowPage + 1)
+                .pageSize(pageSize)
+                .totalPage(totalPage)
+                .totalContent(toDoProgressResponseList.size())
+                .content(content)
+                .build();
+
+        return new ResponseEntity<>(toDoProgressPagingResponse, HttpStatus.OK);
     }
 }
 
